@@ -1,0 +1,41 @@
+input {
+  exec {
+    command => "redis-cli -h {{ logstash_redis_host }} -p {{ logstash_redis_port }} info clients"
+    interval => 2
+    type => "redis-clients"
+
+    add_field => { "elasticsearch_index" => "redis-metrics" }
+  }
+
+  exec {
+    command => "redis-cli -h {{ logstash_redis_host }} -p {{ logstash_redis_port }} info memory"
+    interval => 2
+    type => "redis-memory"
+
+    add_field => { "elasticsearch_index" => "redis-metrics" }
+  }
+
+  exec {
+    command => "redis-cli -h {{ logstash_redis_host }} -p {{ logstash_redis_port }} info cpu"
+    interval => 2
+    type => "redis-cpu"
+
+    add_field => { "elasticsearch_index" => "redis-metrics" }
+  }
+
+  exec {
+    command => "redis-cli -h {{ logstash_redis_host }} -p {{ logstash_redis_port }} info stats"
+    interval => 2
+    type => "redis-stats"
+
+    add_field => { "elasticsearch_index" => "redis-metrics" }
+  }
+
+  exec {
+    command => "redis-cli -h {{ logstash_redis_host }} -p {{ logstash_redis_port }} info replication"
+    interval => 2
+    type => "redis-replication"
+
+    add_field => { "elasticsearch_index" => "redis-metrics" }
+  }
+}

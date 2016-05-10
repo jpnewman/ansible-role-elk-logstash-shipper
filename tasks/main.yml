@@ -1,0 +1,108 @@
+---
+# tasks file for jpnewman.elk-logstash-shipper
+- name: Import Elastic GPG Key
+  apt_key: url=http://packages.elastic.co/GPG-KEY-elasticsearch state=present
+
+- name: Add Logstash Repo into source list
+  apt_repository:
+    repo: 'deb http://packages.elastic.co/logstash/{{ logstash_repo_version }}/debian stable main'
+#    filename: logstash
+    state: present
+    update_cache: yes
+
+- name: Install Logstash
+  apt: name=logstash state=present update_cache=yes cache_valid_time={{ apt_cache_valid_time }}
+  notify: restart logstash
+
+- name: Config Upstart
+  template: src=upstart/logstash.j2 dest=/etc/default/logstash owner=root group=root mode=0644
+  notify: restart logstash
+
+# SSL Cert
+- name: Create directory to store ssl crt & key
+  tags: ["ssl"]
+  file: path={{ ssl_cert_directory }} state=directory
+
+- name: Copy SSL cert
+  tags: ["ssl"]
+  copy: src={{ ssl_cert_local_directory }}/{{ ssl_cert }} dest={{ ssl_cert_directory }}
+  notify: restart logstash
+
+- name: Copy SSL key
+  tags: ["ssl"]
+  copy: src={{ ssl_cert_local_directory }}/{{ ssl_key }} dest={{ ssl_cert_directory }}
+  notify: restart logstash
+
+# GeoIP database
+- name: Install zip programs
+  apt: name={{ item }} state=present update_cache=yes cache_valid_time={{ apt_cache_valid_time }}
+  with_items:
+    - gzip
+
+- name: Create GeoIP directory
+  file: path={{ geoip_database | dirname }} state=directory
+
+- name: Download GeoIP database
+  get_url: url={{ geoip_database_url_path}}/{{ geoip_database_url_filename }} dest={{ geoip_database | dirname }}
+  register: get_geoip_database
+
+- name: Extract GeoIP database
+  command: gunzip --keep {{ geoip_database_url_filename }}
+  args:
+    chdir: "{{ geoip_database | dirname }}"
+    creates: "{{ geoip_database_extracted_filename }}"
+  when: get_geoip_database | changed
+
+# Config
+- name: Create patterns directory
+  file: path=/opt/logstash/patterns state=directory
+
+- name: Copy patterns
+  copy: src={{ item }} dest=/opt/logstash/patterns/{{ item | basename }} owner=logstash group=logstash mode=0644
+  with_items:
+    - patterns/nginx
+
+- include: plugins.yml
+  when: logstash_with_plugin
+
+- name: Copy shipper templates
+  template: src={{item.src}} dest={{item.dest}} owner=logstash group=logstash mode=0644
+  with_items:
+     - { src: 'logstash/conf.d/01-lumberjack-input.conf.j2', dest: '/etc/logstash/conf.d/01-lumberjack-input.conf' }
+     - { src: 'logstash/conf.d/02-beats-input.conf.j2', dest: '/etc/logstash/conf.d/02-beats-input.conf' }
+     - { src: 'logstash/conf.d/03-syslog-input.conf.j2', dest: '/etc/logstash/conf.d/03-syslog-input.conf' }
+     - { src: 'logstash/conf.d/10-syslog-filter.conf.j2', dest: '/etc/logstash/conf.d/10-syslog-filter.conf' }
+     - { src: 'logstash/conf.d/11-nginx-filter.conf.j2', dest: '/etc/logstash/conf.d/11-nginx-filter.conf' }
+     - { src: 'logstash/conf.d/12-apache-filter.conf.j2', dest: '/etc/logstash/conf.d/12-apache-filter.conf' }
+     - { src: 'logstash/conf.d/13-artifactory-filter.conf.j2', dest: '/etc/logstash/conf.d/13-artifactory-filter.conf' }
+     - { src: 'logstash/conf.d/25-shipper-filter.conf.j2', dest: '/etc/logstash/conf.d/25-shipper-filter.conf' }
+     - { src: 'logstash/conf.d/29-geoip-filter.conf.j2', dest: '/etc/logstash/conf.d/29-geoip-filter.conf' }
+     - { src: 'logstash/conf.d/30-redis-output.conf.j2', dest: '/etc/logstash/conf.d/30-redis-output.conf' }
+  notify:
+    - restart logstash
+
+- name: Copy shipper redis metrics templates, if needed
+  template: src={{item.src}} dest={{item.dest}} owner=logstash group=logstash mode=0644
+  with_items:
+     - { src: 'logstash/conf.d/04-redis-metrics-input.conf.j2', dest: '/etc/logstash/conf.d/04-redis-metrics-input.conf' }
+     - { src: 'logstash/conf.d/14-redis-metrics-filter.conf.j2', dest: '/etc/logstash/conf.d/14-redis-metrics-filter.conf' }
+  when: logstash_redis_metrics
+  notify:
+    - restart logstash
+
+- name: Copy shipper debug templates, if needed
+  template: src=logstash/conf.d/31-stdout-output.conf.j2 dest=/etc/logstash/conf.d/31-stdout-output.conf owner=logstash group=logstash mode=0644
+  when: logstash_debug
+  notify:
+    - restart logstash
+
+- name: Remove shipper debug templates, if needed
+  file: path=/etc/logstash/conf.d/31-stdout-output.conf state=absent
+  when: not logstash_debug
+  notify:
+    - restart logstash
+
+- name: Check logstash config
+  become: yes
+  command: service logstash configtest
+  register: result

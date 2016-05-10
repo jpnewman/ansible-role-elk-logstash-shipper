@@ -1,0 +1,37 @@
+filter {
+  if [type] == "artifactory-access" {
+    kv {
+      trim => " "
+    }
+
+    grok {
+      match => {
+        "message" => [
+          "%{DATESTAMP:datestamp}%{SPACE}\[%{GREEDYDATA:request_type}\]%{SPACE}%{NOTSPACE:repo}\:(?<package>.+?)\.(?<version>\d([0-9\.])+).nupkg%{SPACE}for%{SPACE}%{NOTSPACE:user}\/%{IPORHOST:remote}\.",
+          "%{DATESTAMP:datestamp}%{SPACE}\[%{GREEDYDATA:request_type}\]%{SPACE}%{NOTSPACE:repo}\:(?<package>.+?)\.(?<version>\d([0-9\.])+)\-%{NOTSPACE:prerelease}\.nupkg%{SPACE}for%{SPACE}%{NOTSPACE:user}\/%{IPORHOST:remote}\.",
+          "%{DATESTAMP:datestamp}%{SPACE}\[%{GREEDYDATA:request_type}\]%{SPACE}%{GREEDYDATA:msg}%{SPACE}for%{SPACE}%{NOTSPACE:user}\/%{IPORHOST:remote}\.",
+          "%{DATESTAMP:datestamp}%{SPACE}\[%{GREEDYDATA:request_type}\]%{SPACE}for%{SPACE}%{NOTSPACE:user}\/%{IPORHOST:remote}\.",
+          "%{DATESTAMP:datestamp}%{SPACE}\[%{GREEDYDATA:request_type}\]%{SPACE}for%{SPACE}%{NOTSPACE:user}\."
+        ]
+      }
+    }
+
+    date {
+      match => [ "datestamp", "YY-MM-dd HH:mm:ss,SSS" ]
+      target => "@timestamp"
+      add_field => { "timestamp_from_log" => "true" }
+    }
+
+    if ![timestamp_from_log] {
+      mutate {
+        add_field => { "timestamp_from_log" => "false" }
+      }
+    }
+
+    if [remote] {
+      mutate {
+        add_field => { "clientip" => "%{remote}" }
+      }
+    }
+  }
+}

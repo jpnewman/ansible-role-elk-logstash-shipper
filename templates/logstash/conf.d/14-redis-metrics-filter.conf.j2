@@ -1,0 +1,18 @@
+filter {
+  if [type] == "redis-clients"
+  or [type] == "redis-memory"
+  or [type] == "redis-cpu"
+  or [type] == "redis-stats"
+  or [type] == "redis-replication" {
+    split {}
+
+    ruby {
+      code => "
+        fields = event['message'].split(':')
+        if fields[0] !~ /^#/
+          event[fields[0].strip()] = fields[1].strip().to_f
+        end
+      "
+    }
+  }
+}

@@ -1,0 +1,37 @@
+filter {
+  if [clientip] =~ /.+/ {
+    geoip {
+      source => "clientip"
+      target => "geoip"
+      database => "{{ geoip_database }}"
+      add_field => [ "[geoip][location]", "%{[geoip][longitude]}" ]
+      add_field => [ "[geoip][location]", "%{[geoip][latitude]}"  ]
+      add_field => [ "[geoip][source]", "MaxMind GeoIP" ]
+    }
+
+    {% if logstash_geoip_known_locations | length > 0 -%}
+
+    if "geoip" not in [tags] {
+      # http://www.logstash.net/docs/1.4.2/filters/cidr
+      # Community-contributed plugin!
+
+{% for location in logstash_geoip_known_locations %}
+      # {{ location.name }}
+      cidr {
+        add_field => [ "[geoip][source]", "{{ location.name }}" ]
+        add_field => [ "[geoip][location]", "{{ location.longitude }}" ]
+        add_field => [ "[geoip][location]", "{{ location.latitude }}" ]
+        address => [ "%{clientip}" ]
+        network => [ "{{ location.networks|join('", "') }}" ]
+      }
+
+{% endfor %}
+    }
+
+    {% endif -%}
+
+    mutate {
+      convert => [ "[geoip][location]", "float" ]
+    }
+  }
+}

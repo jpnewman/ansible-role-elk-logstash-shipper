@@ -1,0 +1,6 @@
+filter {
+  mutate {
+    add_field => { "shipper" => "{{ inventory_hostname }}" }
+    add_field => { "shipper_ip" => "{{ hostvars[inventory_hostname]['ansible_' + which_interface]['ipv4']['address'] }}" }
+  }
+}

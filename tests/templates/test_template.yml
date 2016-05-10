@@ -1,0 +1,11 @@
+---
+- hosts: all
+  gather_facts: no
+  become: no
+
+  vars_files:
+    - ./defaults/main.yml
+
+  tasks:
+    - name: Configure Filebeat
+      template: src=../../templates/logstash/conf.d/29-geoip-filter.conf.j2 dest=./tmp/29-geoip-filter.conf
