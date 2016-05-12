@@ -1,5 +1,7 @@
 # jpnewman.elk-logstash-shipper
 
+[![Build Status](https://travis-ci.org/jpnewman/ansible-role-elk-logstash-shipper.svg?branch=master)](https://travis-ci.org/jpnewman/ansible-role-elk-logstash-shipper)
+
 This is a Ansible role to installs [logstash](https://www.elastic.co/products/logstash) shipper
 
 The logstash shipper creates the following logstash configuration files: -
