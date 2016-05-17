@@ -1,5 +1,6 @@
 # jpnewman.elk-logstash-shipper
 
+[![Ansible Role](https://img.shields.io/ansible/role/9591.svg?maxAge=2592000)](https://galaxy.ansible.com/jpnewman/elk-logstash-shipper/)
 [![Build Status](https://travis-ci.org/jpnewman/ansible-role-elk-logstash-shipper.svg?branch=master)](https://travis-ci.org/jpnewman/ansible-role-elk-logstash-shipper)
 
 This is a Ansible role to installs [logstash](https://www.elastic.co/products/logstash) shipper
