@@ -55,10 +55,10 @@
 
 # Config
 - name: Create patterns directory
-  file: path=/opt/logstash/patterns state=directory
+  file: path={{ logstash_pattern_dir }} state=directory
 
 - name: Copy patterns
-  copy: src={{ item }} dest=/opt/logstash/patterns/{{ item | basename }} owner=logstash group=logstash mode=0644
+  copy: src={{ item }} dest={{ logstash_pattern_dir }}/{{ item | basename }} owner=logstash group=logstash mode=0644
   with_items:
     - patterns/nginx
 
@@ -74,6 +74,7 @@
      - { src: 'logstash/conf.d/10-syslog-filter.conf.j2', dest: '/etc/logstash/conf.d/10-syslog-filter.conf' }
      - { src: 'logstash/conf.d/11-nginx-filter.conf.j2', dest: '/etc/logstash/conf.d/11-nginx-filter.conf' }
      - { src: 'logstash/conf.d/12-apache-filter.conf.j2', dest: '/etc/logstash/conf.d/12-apache-filter.conf' }
+     - { src: 'logstash/conf.d/12-tomcat-filter.conf.j2', dest: '/etc/logstash/conf.d/12-tomcat-filter.conf' }
      - { src: 'logstash/conf.d/13-artifactory-filter.conf.j2', dest: '/etc/logstash/conf.d/13-artifactory-filter.conf' }
      - { src: 'logstash/conf.d/25-shipper-filter.conf.j2', dest: '/etc/logstash/conf.d/25-shipper-filter.conf' }
      - { src: 'logstash/conf.d/29-geoip-filter.conf.j2', dest: '/etc/logstash/conf.d/29-geoip-filter.conf' }

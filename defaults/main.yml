@@ -23,6 +23,8 @@ logstash_ls_open_files: 16384
 
 logstash_geoip_known_locations: []
 
+logstash_pattern_dir: '/opt/logstash/patterns/'
+
 # indexer
 logstash_elasticsearch_hosts: '["localhost:9200"]'
 logstash_elasticsearch_index: 'logstash-%{+YYYY.MM.dd}'

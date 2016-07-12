@@ -14,5 +14,6 @@ galaxy_info:
   galaxy_tags:
     - elk
     - logstash
+    - monitoring
 
 dependencies: []
