@@ -1,0 +1,29 @@
+filter {
+  if [type] == "gerrit_sshd_log" {
+    grok {
+      match => {
+        "message" => [
+          "\[%{TIMESTAMP_ISO8601:datestamp}%{DATA}\]%{SPACE}[0-9A-Fa-f]{8}%{SPACE}%{NOTSPACE:username}%{SPACE}a/[0-9]{3}%{SPACE}(?<action>LOGIN)%{SPACE}FROM%{SPACE}%{IPORHOST:remote}",
+          "\[%{TIMESTAMP_ISO8601:datestamp}%{DATA}\]%{SPACE}[0-9A-Fa-f]{8}%{SPACE}'%{DATA:username}'%{SPACE}-%{SPACE}(?<action>LOGIN)%{SPACE}FROM%{SPACE}%{IPORHOST:remote}",
+          "\[%{TIMESTAMP_ISO8601:datestamp}%{DATA}\]%{SPACE}[0-9A-Fa-f]{8}%{SPACE}%{NOTSPACE:username}%{SPACE}a/[0-9]{3}%{SPACE}(?<action>LOGIN|LOGOUT)",
+          "\[%{TIMESTAMP_ISO8601:datestamp}%{DATA}\]%{SPACE}[0-9A-Fa-f]{8}%{SPACE}'%{DATA:username}'%{SPACE}-%{SPACE}(?<action>LOGIN|LOGOUT)",
+          "\[%{TIMESTAMP_ISO8601:datestamp}%{DATA}\]%{SPACE}[0-9A-Fa-f]{8}%{SPACE}%{NOTSPACE:username}%{SPACE}a/[0-9]{3}%{SPACE}%{GREEDYDATA:action}",
+          "\[%{TIMESTAMP_ISO8601:datestamp}%{DATA}\]%{SPACE}[0-9A-Fa-f]{8}%{SPACE}'%{DATA:username}'%{SPACE}a/[0-9]{3}%{SPACE}%{GREEDYDATA:action}",
+          "\[%{TIMESTAMP_ISO8601:datestamp}%{DATA}\]%{GREEDYDATA:msg}"
+        ]
+      }
+    }
+
+    date {
+      match => [ "datestamp", "YY-MM-dd HH:mm:ss,SSS" ]
+      target => "@timestamp"
+      add_tag => [ "timestamp_from_log" ]
+    }
+
+    if [remote] {
+      mutate {
+        add_field => { "clientip" => "%{remote}" }
+      }
+    }
+  }
+}

@@ -9,13 +9,7 @@ filter {
     date {
       match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
       target => "@timestamp"
-      add_field => { "timestamp_from_log" => "true" }
-    }
-
-    if ![timestamp_from_log] {
-      mutate {
-        add_field => { "timestamp_from_log" => "false" }
-      }
+      add_tag => [ "timestamp_from_log" ]
     }
   }
 }

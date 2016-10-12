@@ -76,6 +76,7 @@
      - { src: 'logstash/conf.d/12-apache-filter.conf.j2', dest: '/etc/logstash/conf.d/12-apache-filter.conf' }
      - { src: 'logstash/conf.d/12-tomcat-filter.conf.j2', dest: '/etc/logstash/conf.d/12-tomcat-filter.conf' }
      - { src: 'logstash/conf.d/13-artifactory-filter.conf.j2', dest: '/etc/logstash/conf.d/13-artifactory-filter.conf' }
+     - { src: 'logstash/conf.d/15-gerrit-filter.conf.j2', dest: '/etc/logstash/conf.d/15-gerrit-filter.conf' }
      - { src: 'logstash/conf.d/25-shipper-filter.conf.j2', dest: '/etc/logstash/conf.d/25-shipper-filter.conf' }
      - { src: 'logstash/conf.d/29-geoip-filter.conf.j2', dest: '/etc/logstash/conf.d/29-geoip-filter.conf' }
      - { src: 'logstash/conf.d/30-redis-output.conf.j2', dest: '/etc/logstash/conf.d/30-redis-output.conf' }
@@ -107,3 +108,4 @@
   become: yes
   command: service logstash configtest
   register: result
+  changed_when: False

@@ -19,19 +19,47 @@ filter {
     date {
       match => [ "datestamp", "YY-MM-dd HH:mm:ss,SSS" ]
       target => "@timestamp"
-      add_field => { "timestamp_from_log" => "true" }
-    }
-
-    if ![timestamp_from_log] {
-      mutate {
-        add_field => { "timestamp_from_log" => "false" }
-      }
+      add_tag => [ "timestamp_from_log" ]
     }
 
     if [remote] {
       mutate {
         add_field => { "clientip" => "%{remote}" }
       }
+    }
+  }
+
+  if [type] == "artifactory-catalina" {
+    kv {
+      trim => " "
+    }
+
+    grok {
+      match => {
+        "message" => [
+          "%{TIMESTAMP_ISO8601:datestamp} \[(?<thread>.+?)\] \[%{LOGLEVEL:level}%{SPACE}\] \(%{JAVACLASS:class}:%{NUMBER:line}\) - %{GREEDYDATA:logmessage}"
+        ]
+      }
+      remove_field => [
+        ",Version",
+        "customOptions",
+        "includePrerelease",
+        "versionConstraints",
+        "searchTerm",
+        "includeAllVersions",
+        "targetFrameworks",
+        "targetFramework",
+        "thread"
+      ]
+    }
+
+    date {
+      match => [
+        "datestamp",
+        "yyyy-MM-dd HH:mm:ss,SSS"
+      ]
+      add_tag => [ "timestamp_from_log" ]
+      remove_field => [datestamp]
     }
   }
 }
