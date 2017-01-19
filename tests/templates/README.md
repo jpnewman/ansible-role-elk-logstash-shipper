@@ -1,4 +1,4 @@
-### Testing role 'jpnewman.elk-filebeats' template
+### Testing role 'jpnewman.elk-logstash-shipper' template
 
 ~~~
 mkdir tmp
