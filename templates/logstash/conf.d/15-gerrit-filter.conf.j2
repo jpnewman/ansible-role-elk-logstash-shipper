@@ -25,5 +25,46 @@ filter {
         add_field => { "clientip" => "%{remote}" }
       }
     }
+  } else if [type] == "gerrit_review_logs" {
+    grok {
+      match => {
+        "message" => [
+          "%{TIMESTAMP_ISO8601:datestamp}%{DATA}%{SPACE}:%{SPACE}(?<msg>(.|\r|\n)*)"
+        ]
+      }
+    }
+
+    date {
+      match => [ "datestamp", "YY-MM-dd HH:mm:ss" ]
+      target => "@timestamp"
+      add_tag => [ "timestamp_from_log" ]
+    }
+
+    if [remote] {
+      mutate {
+        add_field => { "clientip" => "%{remote}" }
+      }
+    }
+
+    if [msg] =~ '^\{' {
+      ruby{
+        init => "require 'json'"
+        code => "event['json'] = eval(event['msg']).to_json"
+      }
+
+      json{
+          source => "json"
+          target => "review"
+      }
+
+      mutate {
+        remove_field => [ "json", "msg" ]
+      }
+    } else if [msg] =~ '^\<' {
+      xml{
+        source => "msg"
+        target => "event"
+      }
+    }
   }
 }
