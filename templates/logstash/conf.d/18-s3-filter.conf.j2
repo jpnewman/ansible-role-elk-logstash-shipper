@@ -1,0 +1,14 @@
+# https://medium.com/@LifeAndDev/using-the-elk-stack-to-analyze-your-s3-logs-981cb5cc5378
+
+filter {
+  if [type] == "s3-access" {
+    grok {
+      match => { "message" => "%{S3_ACCESS_LOG}"}
+    }
+
+    date {
+      locale => "en"
+      match => ["timestamp", "d/MMM/YYYY:HH:mm:ss Z"]
+    }
+  }
+}

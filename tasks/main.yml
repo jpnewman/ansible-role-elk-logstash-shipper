@@ -61,6 +61,7 @@
   copy: src={{ item }} dest={{ logstash_pattern_dir }}/{{ item | basename }} owner=logstash group=logstash mode=0644
   with_items:
     - patterns/nginx
+    - patterns/aws
 
 - include: plugins.yml
   when: logstash_with_plugin
@@ -78,6 +79,7 @@
      - { src: 'logstash/conf.d/13-artifactory-filter.conf.j2', dest: '/etc/logstash/conf.d/13-artifactory-filter.conf' }
      - { src: 'logstash/conf.d/15-gerrit-filter.conf.j2', dest: '/etc/logstash/conf.d/15-gerrit-filter.conf' }
      - { src: 'logstash/conf.d/16-haproxy-filter.conf.j2', dest: '/etc/logstash/conf.d/16-haproxy-filter.conf' }
+     - { src: 'logstash/conf.d/18-s3-filter.conf.j2', dest: '/etc/logstash/conf.d/18-s3-filter.conf' }
      - { src: 'logstash/conf.d/25-shipper-filter.conf.j2', dest: '/etc/logstash/conf.d/25-shipper-filter.conf' }
      - { src: 'logstash/conf.d/29-geoip-filter.conf.j2', dest: '/etc/logstash/conf.d/29-geoip-filter.conf' }
      - { src: 'logstash/conf.d/30-redis-output.conf.j2', dest: '/etc/logstash/conf.d/30-redis-output.conf' }
