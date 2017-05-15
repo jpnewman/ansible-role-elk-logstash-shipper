@@ -1,10 +1,13 @@
 ---
 # tasks file for jpnewman.elk-logstash-shipper
 
-# TODO: Run command 'bin/plugin list --verbose logstash-filter-cidr' and check output to see if plugin is already installed
+- name: Get Logstash plugins
+  shell: bin/logstash-plugin list chdir=/usr/share/logstash
+  register: logstash_installed_plugins
+  changed_when: false
 
 - name: Installing Logstash Plugins
-  shell: bin/plugin install {{ item }} chdir=/opt/logstash
+  shell: bin/logstash-plugin install {{ item }} chdir=/usr/share/logstash
   notify: restart logstash
-  with_items:
-    - logstash-filter-cidr
+  when: item not in logstash_installed_plugins.stdout_lines
+  with_items: "{{ logstash_plugins }}"

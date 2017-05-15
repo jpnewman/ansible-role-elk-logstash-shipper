@@ -8,9 +8,9 @@ filter {
 
     ruby {
       code => "
-        fields = event['message'].split(':')
+        fields = event.get('message').split(':')
         if fields[0] !~ /^#/
-          event[fields[0].strip()] = fields[1].strip().to_f
+          event.set(fields[0].strip(), fields[1].strip().to_f)
         end
       "
     }

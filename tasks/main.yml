@@ -1,11 +1,11 @@
 ---
 # tasks file for jpnewman.elk-logstash-shipper
 - name: Import Elastic GPG Key
-  apt_key: url=http://packages.elastic.co/GPG-KEY-elasticsearch state=present
+  apt_key: url="{{ elasticsearch_gpg_key_url }}" state=present
 
 - name: Add Logstash Repo into source list
   apt_repository:
-    repo: 'deb http://packages.elastic.co/logstash/{{ logstash_repo_version }}/debian stable main'
+    repo: "{{ logstash_apt_repository }}"
 #    filename: logstash
     state: present
     update_cache: yes
@@ -15,7 +15,12 @@
   notify: restart logstash
 
 - name: Config Upstart
-  template: src=upstart/logstash.j2 dest=/etc/default/logstash owner=root group=root mode=0644
+  template:
+    src: upstart/logstash.j2
+    dest: /etc/default/logstash
+    owner: root
+    group: root
+    mode: 0644
   notify: restart logstash
 
 # SSL Cert
@@ -43,7 +48,10 @@
   file: path={{ geoip_database | dirname }} state=directory
 
 - name: Download GeoIP database
-  get_url: url={{ geoip_database_url_path}}/{{ geoip_database_url_filename }} dest={{ geoip_database | dirname }}
+  get_url:
+    url: "{{ geoip_database_url }}"
+    dest: "{{ geoip_database | dirname }}"
+    # checksum: "{{ geoip_database_checksum }}"
   register: get_geoip_database
 
 - name: Extract GeoIP database
@@ -67,7 +75,12 @@
   when: logstash_with_plugin
 
 - name: Copy shipper templates
-  template: src={{item.src}} dest={{item.dest}} owner=logstash group=logstash mode=0644
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: logstash
+    group: logstash
+    mode: 0644
   with_items:
      - { src: 'logstash/conf.d/01-lumberjack-input.conf.j2', dest: '/etc/logstash/conf.d/01-lumberjack-input.conf' }
      - { src: 'logstash/conf.d/02-beats-input.conf.j2', dest: '/etc/logstash/conf.d/02-beats-input.conf' }
@@ -87,7 +100,12 @@
     - restart logstash
 
 - name: Copy shipper redis metrics templates, if needed
-  template: src={{item.src}} dest={{item.dest}} owner=logstash group=logstash mode=0644
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: logstash
+    group: logstash
+    mode: 0644
   with_items:
      - { src: 'logstash/conf.d/04-redis-metrics-input.conf.j2', dest: '/etc/logstash/conf.d/04-redis-metrics-input.conf' }
      - { src: 'logstash/conf.d/14-redis-metrics-filter.conf.j2', dest: '/etc/logstash/conf.d/14-redis-metrics-filter.conf' }
@@ -96,7 +114,12 @@
     - restart logstash
 
 - name: Copy shipper debug templates, if needed
-  template: src=logstash/conf.d/31-stdout-output.conf.j2 dest=/etc/logstash/conf.d/31-stdout-output.conf owner=logstash group=logstash mode=0644
+  template:
+    src: logstash/conf.d/31-stdout-output.conf.j2
+    dest: /etc/logstash/conf.d/31-stdout-output.conf
+    owner: logstash
+    group: logstash
+    mode: 0644
   when: logstash_debug
   notify:
     - restart logstash
@@ -109,6 +132,7 @@
 
 - name: Check logstash config
   become: yes
-  command: service logstash configtest
+  command: /usr/share/logstash/bin/logstash -t -f /etc/logstash/conf.d --path.settings=/etc/logstash/
   register: result
+  when: check_logstash_config
   changed_when: False

@@ -1,6 +1,7 @@
 filter {
   if [type] == "nginx-access" {
     grok {
+      patterns_dir => ["{{ logstash_pattern_dir }}"]
       match => { "message" => "%{NGINXACCESS}" }
     }
   }

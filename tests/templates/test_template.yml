@@ -8,4 +8,6 @@
 
   tasks:
     - name: Configure Filebeat
-      template: src=../../templates/logstash/conf.d/29-geoip-filter.conf.j2 dest=./tmp/29-geoip-filter.conf
+      template:
+        src: ../../templates/logstash/conf.d/29-geoip-filter.conf.j2
+        dest: ./tmp/29-geoip-filter.conf

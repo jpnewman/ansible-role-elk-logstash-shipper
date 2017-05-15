@@ -32,7 +32,9 @@ Ansible 2.x
 |Variable|Description|Default|
 |---|---|---|
 |```which_interface```||eth0|
-|```logstash_repo_version```||2.3|
+|```logstash_repo_version```||5.x|
+|```elasticsearch_gpg_key_url```||```https://artifacts.elastic.co/GPG-KEY-elasticsearch```|
+|```logstash_apt_repository```||```deb https://artifacts.elastic.co/packages/{{ logstash_repo_version }}/apt stable main```|
 |```logstash_listen_port```||5043|
 |```logstash_redis_host```||localhost|
 |```logstash_redis_port```||6379|
@@ -42,10 +44,12 @@ Ansible 2.x
 |```logstash_beats_congestion_threshold```||5|
 |```logstash_redis_metrics```||true|
 |```logstash_with_plugin```||true|
+|```logstash_plugins```||"logstash-filter-cidr"|
 |```logstash_debug```||false|
 |```logstash_ls_heap_size```||1g|
 |```logstash_ls_open_files```||16384|
 |```logstash_geoip_known_locations```||[]|
+|```logstash_pattern_dir```||'/etc/logstash/patterns'|
 |```logstash_elasticsearch_hosts```||'["localhost:9200"]'|
 |```logstash_elasticsearch_index```||'logstash-%{+YYYY.MM.dd}'|
 |```ssl_cert_local_directory```||files/certs|
@@ -53,10 +57,12 @@ Ansible 2.x
 |```ssl_cert```||logstash-forwarder.crt|
 |```ssl_key```||logstash-forwarder.key|
 |```apt_cache_valid_time```||600|
-|```geoip_database_url_path```||http://geolite.maxmind.com/download/geoip/database|
-|```geoip_database_url_filename```||GeoLiteCity.dat.gz|
-|```geoip_database_extracted_filename```||GeoLiteCity.dat|
-|```geoip_database```||/etc/logstash/geoip/{{ geoip_database_extracted_filename }}|
+|```geoip_database_extracted_filename```||GeoLite2-City.mmdb|
+|```geoip_database_url_filename```||```"{{ geoip_database_extracted_filename }}.gz"```|
+|```geoip_database_url```||```"http://geolite.maxmind.com/download/geoip/database/{{ geoip_database_url_filename }}"```|
+|```geoip_database```||```"/etc/logstash/geoip/{{ geoip_database_extracted_filename }}"```|
+|```check_logstash_config```||false|
+
 
 ## Dependencies
 

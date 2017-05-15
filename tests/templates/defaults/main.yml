@@ -1,5 +1,5 @@
 ---
-geoip_database_extracted_filename: GeoLiteCity.dat
+geoip_database_extracted_filename: GeoLite2-City.mmdb
 geoip_database: /etc/logstash/geoip/{{ geoip_database_extracted_filename }}
 
 logstash_geoip_known_locations:

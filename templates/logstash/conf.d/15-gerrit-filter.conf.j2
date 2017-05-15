@@ -49,7 +49,7 @@ filter {
     if [msg] =~ '^\{' {
       ruby{
         init => "require 'json'"
-        code => "event['json'] = eval(event['msg']).to_json"
+        code => "event.set('json', eval(event.get('msg').to_json))"
       }
 
       json{
