@@ -62,6 +62,17 @@
   with_items:
     - patterns/nginx
     - patterns/aws
+    - patterns/haproxy
+
+- name: Create patterns directory
+  file: path={{ logstash_regexes_dir }} state=directory
+  when: logstash_http_custom_regexes
+
+- name: Copy user-agent regexes
+  copy: src={{ item }} dest={{ logstash_regexes_dir }}/{{ item | basename }} owner=logstash group=logstash mode=0644
+  with_items:
+    - regexes/regexes_custom.yaml
+  when: logstash_http_custom_regexes
 
 - include: plugins.yml
   when: logstash_with_plugin

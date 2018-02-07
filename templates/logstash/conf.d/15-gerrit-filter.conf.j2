@@ -20,6 +20,11 @@ filter {
       add_tag => [ "timestamp_from_log" ]
     }
 
+    mutate {
+      convert => { "review.patchset" => "integer" }
+      convert => { "event.Patchset" => "integer" }
+    }
+
     if [remote] {
       mutate {
         add_field => { "clientip" => "%{remote}" }

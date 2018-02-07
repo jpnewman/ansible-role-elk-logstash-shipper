@@ -42,6 +42,7 @@ Ansible 2.x
 |```logstash_beats_congestion_threshold```||5|
 |```logstash_redis_metrics```||true|
 |```logstash_with_plugin```||true|
+|```logstash_http_custom_regexes```||false|
 |```logstash_debug```||false|
 |```logstash_ls_heap_size```||1g|
 |```logstash_ls_open_files```||16384|
